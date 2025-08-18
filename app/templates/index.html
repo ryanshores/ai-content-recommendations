@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h2>🙈 Home</h2>
+        <form method="POST">
+            {{form.input}}
+            <button type="submit">Get</button>
+        </form>
+        {% if form.output.data %}
+        <div class="result">
+            <h3>Data:</h3>
+            <p>{{ form.output.data }}</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
