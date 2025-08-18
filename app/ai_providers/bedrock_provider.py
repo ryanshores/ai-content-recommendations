@@ -1,8 +1,8 @@
 import json, logging, boto3
+
 from enum import Enum
 from botocore.exceptions import ClientError
-
-from app.clients.base_client import BaseClient
+from .base_provider import BaseProvider
 
 logger = logging.getLogger(__name__)
 
@@ -12,14 +12,14 @@ class BedrockModels(Enum):
     CLAUDE_V2 = "anthropic.claude-v2"
 
 
-class BedrockClient(BaseClient):
+class BedrockProvider(BaseProvider):
     def __init__(self,
                  region='us-east-1',
                  model_id: BedrockModels = BedrockModels.TITAN_TEXT_EXPRESS):
         self.brt = boto3.client("bedrock-runtime", region_name=region)
         self.model_id: str = model_id.name
 
-    def _invoke_model(self, prompt):
+    def generate_response(self, prompt: str) -> str:
         """
         Invokes the specified model with the supplied prompt.
         param prompt: The prompt that you want to send to the model.
@@ -54,25 +54,3 @@ class BedrockClient(BaseClient):
         except (ClientError, Exception) as e:
             print(f"ERROR: Can't invoke '{self.model_id}'. Reason: {e}")
             raise
-
-    def get_movie_recommendations(self, input: str) -> str:
-        """
-            This function demonstrates how to invoke an Amazon Bedrock model to get movie recommendations based on user input.
-            :param input: A string containing the user input.
-            :return: A string containing movie recommendations.
-            """
-
-        # Set the model ID, e.g., Amazon Titan Text G1 - Express.
-        model_id = "amazon.titan-text-express-v1"
-
-        # Define the prompt for the model.
-        prompt = f"Recommend some movies based on the following user input: '{input}'"
-
-        # Send the prompt to the model.
-        response = self._invoke_model(prompt)
-
-        print(f"Response: {response}")
-
-        logger.info("Done.")
-
-        return response

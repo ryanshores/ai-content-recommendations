@@ -1,6 +1,6 @@
 from flask import render_template, request, Blueprint
 from .forms import IndexForm
-from config import client
+from .client import get_mood_recommendation
 
 main = Blueprint('main', __name__)
 
@@ -8,5 +8,5 @@ main = Blueprint('main', __name__)
 def index():
     form = IndexForm(request.form)
     if request.method == 'POST' and form.validate():
-        form.output.data = client.get_movie_recommendations(form.input.data)
+        form.output.data = get_mood_recommendation(form.input.data)
     return render_template('index.html', form=form)

@@ -7,14 +7,14 @@
 </head>
 <body>
     <div class="container">
-        <h2>🙈 Home</h2>
+        <h2>🎥 What kind of mood are you in?</h2>
         <form method="POST">
             {{form.input}}
-            <button type="submit">Get</button>
+            <button type="submit">Get recommendations</button>
         </form>
         {% if form.output.data %}
         <div class="result">
-            <h3>Data:</h3>
+            <h3>Recommendations:</h3>
             <p>{{ form.output.data }}</p>
         </div>
         {% endif %}

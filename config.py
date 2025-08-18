@@ -4,11 +4,11 @@ ENV = os.getenv("APP_ENV", "local")
 PROVIDER_TYPE = os.getenv("PROVIDER", "ollama")  # options: 'hf', 'bedrock', 'ollama'
 
 if PROVIDER_TYPE == "bedrock":
-    from app.clients.bedrock_client import BedrockClient
-    client = BedrockClient()
+    from app.ai_providers.bedrock_provider import BedrockProvider
+    provider = BedrockProvider()
 elif PROVIDER_TYPE == "ollama":
-    from app.clients.ollama_client import OllamaClient
-    client = OllamaClient(model="llama2")
+    from app.ai_providers.ollama_provider import OllamaProvider
+    provider = OllamaProvider(model="llama2")
 else:
-    from app.clients.hugging_face_client import HuggingFaceClient
-    client = HuggingFaceClient(model="distilgpt2")
+    from app.ai_providers.hugging_face_provider import HuggingFaceProvider
+    provider = HuggingFaceProvider(model="distilgpt2")
