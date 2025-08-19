@@ -33,8 +33,9 @@ class OllamaProvider(BaseProvider):
         self._start_server()
 
         try:
-            resp = requests.post(f"{self.host}/api/generate", json={"model": self.model, "prompt": prompt})
-            return resp.json().get("completion", "No response")
+            json = {"model": self.model, "prompt": prompt, "stream": False}
+            resp = requests.post(f"{self.host}/api/generate", json=json)
+            return resp.json().get("response", "No response")
         except Exception as e:
             return f"Error: {e}"
 
@@ -47,7 +48,8 @@ class OllamaProvider(BaseProvider):
         self._start_server()
 
         try:
-            with requests.post(f"{self.host}/api/generate", json={"model": self.model, "prompt": prompt}, stream=True) as resp:
+            json = {"model": self.model, "prompt": prompt, "stream": True}
+            with requests.post(f"{self.host}/api/generate", json=json) as resp:
                 for line in resp.iter_lines():
                     if line:
                         # Each line is JSON
@@ -90,4 +92,4 @@ class OllamaProvider(BaseProvider):
             return f"Unexpected error: {e}"
 
     def generate_response(self, prompt: str) -> str:
-        return self._run_command(prompt)
+        return self._run_request(prompt)
