@@ -1,12 +1,29 @@
 import subprocess, logging, requests
+from abc import ABC
+from typing import Generator, Dict, Any
 
 from .base_provider import BaseProvider
 
 logger = logging.getLogger(__name__)
 
 
-class OllamaProvider(BaseProvider):
-    host = "http://localhost:11434"
+def _process_streaming_response(response: requests.Response) -> Generator[str, None, None]:
+    """Process the streaming response and format it as SSE data."""
+    for line in response.iter_lines():
+        if not line:
+            continue
+
+        try:
+            data = line.decode("utf-8")
+            yield f"data: {data}\n\n"
+        except UnicodeDecodeError:
+            continue
+
+
+class OllamaProvider(BaseProvider, ABC):
+    OLLAMA_HOST = "http://localhost:11434"
+    API_GENERATE_ENDPOINT = "/api/generate"
+
 
     def __init__(self, model="llama2"):
         self.model = model
@@ -15,7 +32,7 @@ class OllamaProvider(BaseProvider):
 
     def _start_server(self):
         try:
-            status = requests.get(self.host)
+            status = requests.get(self.OLLAMA_HOST)
 
             if status.status_code != 200:
                 logger.info("Starting Ollama server...")
@@ -34,32 +51,33 @@ class OllamaProvider(BaseProvider):
 
         try:
             json = {"model": self.model, "prompt": prompt, "stream": False}
-            resp = requests.post(f"{self.host}/api/generate", json=json)
+            resp = requests.post(f"{self.OLLAMA_HOST}/api/generate", json=json)
             return resp.json().get("response", "No response")
         except Exception as e:
             return f"Error: {e}"
 
-    def _run_request_with_streaming(self, prompt: str):
+
+    def _run_request_with_streaming(self, prompt: str) -> Generator[str, None, None]:
         """
         Runs a request to the Ollama server to generate text based on the provided prompt with streaming.
         :param prompt: The prompt to send to the model.
-        :return: A generator yielding the generated text response from the model.
+        :return: SSE formatted response strings from the model.
         """
         self._start_server()
 
+        request_payload: Dict[str, Any] = {
+            "model": self.model,
+            "prompt": prompt,
+            "stream": True
+        }
+
         try:
-            json = {"model": self.model, "prompt": prompt, "stream": True}
-            with requests.post(f"{self.host}/api/generate", json=json) as resp:
-                for line in resp.iter_lines():
-                    if line:
-                        # Each line is JSON
-                        try:
-                            data = line.decode("utf-8")
-                            yield f"data: {data}\n\n"  # SSE format
-                        except Exception:
-                            continue
-        except Exception as e:
-            yield f"Error: {e}"
+            with requests.post(f"{self.OLLAMA_HOST}{self.API_GENERATE_ENDPOINT}",
+                               json=request_payload) as response:
+                yield from _process_streaming_response(response)
+        except requests.RequestException as e:
+            yield f"data: {{'error': '{str(e)}'}}\n\n"
+
 
     def _run_command(self, prompt: str) -> str:
         """
@@ -93,3 +111,6 @@ class OllamaProvider(BaseProvider):
 
     def generate_response(self, prompt: str) -> str:
         return self._run_request(prompt)
+
+    def generate_response_stream(self, prompt: str) -> Generator[str, None, None]:
+        yield from self._run_request_with_streaming(prompt)

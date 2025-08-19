@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Streaming Recommendations</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h2>🎥 What kind of streaming mood are you in?</h2>
+        <form id="mood-form" method="POST">
+            {{form.input}}
+            <button type="submit">Get streaming recommendations</button>
+        </form>
+        <pre id="output" class="result"></pre>
+    </div>
+    <script src="{{ url_for('static', filename='streaming.js') }}"></script>
+</body>
+</html>

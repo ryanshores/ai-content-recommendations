@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Home</title>
+    <title>Recommendations</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
 </head>
 <body>
     <div class="container">
         <h2>🎥 What kind of mood are you in?</h2>
-        <form method="POST">
+        <form id="mood-form" method="POST">
             {{form.input}}
             <button type="submit">Get recommendations</button>
         </form>
